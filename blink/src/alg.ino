@@ -44,13 +44,19 @@
 LiquidCrystal lcd(47, 46, 42, 43, 44, 45);
 
 double rpm = 0;
-int entradaRPMPin = 0;
-int entradaCorrente = 1;
+double rpmPerAmp = 336; // Calibre-me!
+double rpmTarget = 1600; // Velocidade desejada
 
+int entradaRPMPin = 0;
+int entradaCorrentePin = 1; // Nao Implementado ainda
+
+int saidaCorrentePin = 2;
 
 void setup() {
-  // set up the LCD's number of columns and rows:
+  // Init LCD
   lcd.begin(20, 4);
+  // Init out Pins
+  pinMode(saidaCorrentePin, OUTPUT);
 }
 
 double algor(double rpm, double rpmTarget, double rpmPerAmp = 336)
@@ -68,8 +74,9 @@ double algor(double rpm, double rpmTarget, double rpmPerAmp = 336)
 
 void loop() {
   rpm = analogRead(entradaRPMPin);
-
-  rpm = map(rpm, 34,1022,0,2000);
+  // Mapeia a entrada. Calibrar!
+  rpm = map(rpm, 0,1022,0,2000);
+  
   lcd.setCursor(0, 0);
   lcd.print("RPM entrada");
   lcd.setCursor(0, 1);
@@ -77,7 +84,12 @@ void loop() {
   lcd.setCursor(0, 2);
   lcd.print("Saida A");
   lcd.setCursor(0, 3);
-  lcd.print(algor(rpm,1600,336));
+  double outpAmp = algor(rpm,rpmTarget,rpmPerAmp);
+  lcd.print(outpAmp);
+
+  //outpAmp = map(outpAmp,etc,etc,etc,etc);
+
+  //analogWrite(saidaCorrentePin, outpAmp);
   
   //lcd.print(algor(input,1600,336));
   //input += 0.001;
