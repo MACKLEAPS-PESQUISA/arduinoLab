@@ -47,10 +47,10 @@ double rpm = 0;
 double rpmPerAmp = 336; // Calibre-me!
 double rpmTarget = 1600; // Velocidade desejada
 
-int entradaRPMPin = 0;
-int entradaCorrentePin = 1; // Nao Implementado ainda
+int entradaRPMPin = A0;
+int entradaCorrentePin = A1; // Nao Implementado ainda
 
-int saidaCorrentePin = 2;
+int saidaCorrentePin = 3;
 
 void setup() {
   // Init LCD
@@ -87,9 +87,9 @@ void loop() {
   double outpAmp = algor(rpm,rpmTarget,rpmPerAmp);
   lcd.print(outpAmp);
 
-  //outpAmp = map(outpAmp,etc,etc,etc,etc);
-
-  //analogWrite(saidaCorrentePin, outpAmp);
+  outpAmp = map(outpAmp,0,5,0,1022);
+  
+  analogWrite(saidaCorrentePin, outpAmp);
   
   //lcd.print(algor(input,1600,336));
   //input += 0.001;
