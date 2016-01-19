@@ -75,7 +75,7 @@ double algor(double rpm, double rpmTarget, double rpmPerAmp = 336)
 void loop() {
   rpm = analogRead(entradaRPMPin);
   // Mapeia a entrada. Calibrar!
-  rpm = map(rpm, 0,1022,0,2000);
+  rpm = map(rpm, 0,1022,0,2000);// <externalizar
   
   lcd.setCursor(0, 0);
   lcd.print("RPM entrada");
@@ -87,7 +87,7 @@ void loop() {
   double outpAmp = algor(rpm,rpmTarget,rpmPerAmp);
   lcd.print(outpAmp);
 
-  outpAmp = map(outpAmp,0,5,0,1022);
+  outpAmp = map(outpAmp,0,5,0,1022); // <rever valores
   
   analogWrite(saidaCorrentePin, outpAmp);
   
