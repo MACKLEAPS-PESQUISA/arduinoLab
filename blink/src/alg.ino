@@ -87,7 +87,7 @@ void calibr() {
 	
 }
 
-void main() {
+void progMain() {
 	rpm = analogRead(entradaRPMPin);
 	// Mapeia a entrada. Calibrar!
 	rpm = map(rpm, 0,1022,0,2000);// <externalizar
