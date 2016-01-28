@@ -42,7 +42,7 @@ double rpmPerAmp = 336; // Calibre-me!
 double rpmTarget = 1600; // Velocidade desejada
 
 int entradaRPMPin = A0;
-int entradaCorrentePin = A1; // Nao Implementado ainda
+//int entradaCorrentePin = A1; // Nao Implementado ainda
 
 int saidaCorrentePin = 3;
 
