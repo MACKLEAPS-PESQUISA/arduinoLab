@@ -137,7 +137,7 @@ double algor(double in)
 */
 double normOut(double in)
 {
-	return ((maxO-minO)*in)/maxA
+	return ((maxO-minO)*in)/maxA;
 }
 
 /*
