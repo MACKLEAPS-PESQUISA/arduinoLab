@@ -1,0 +1,238 @@
+/*
+====== LCD ======
+Pinagen:
+lcd(47, 46, 42, 43, 44, 45);
+lcd(RS, E, d4, d5, d6, d7);
+-- Pinos usados
+* LCD RS pin -> (RS)
+* LCD Enable pin -> (E)
+* LCD D4 pin -> (d4)
+* LCD D5 pin -> (d5)
+* LCD D6 pin -> (d6)
+* LCD D7 pin -> (d7)
+-- Config. Pinos
+* LCD R/W pin -> ground
+* LCD VSS pin -> ground
+* LCD VCC pin -> 5V
+-- 10K resistor: (Ver se incluso na placa)
+* ends to +5V and ground
+* wiper to LCD VO pin (pin 3)
+-- Exemplo:
+http://www.arduino.cc/en/Tutorial/LiquidCrystal
+*/
+#include <LiquidCrystal.h>
+
+int RS = 13; //47
+int E = 12; //46
+int d7 = 11; //45
+int d6 = 10; //44
+int d5 = 9; //43
+int d4 = 8; //42
+
+
+
+
+LiquidCrystal lcd(RS, E, d4, d5, d6, d7);
+
+/*
+====== CARRO ======
+Termos:
+RPM: Rotacao por minuto DA RODA DO CARRO
+A: Amperagem fornecida para o motor
+-- Constantes
+* maxRPM -> Rotacao maxima da roda (medicao)
+* rpmT -> Rotacao da roda desejada (a 25km/h) (Raio da roda sendo 24.5cm, o valor e obtido com a seguinte formula: 10.82*V sendo V a velocidade em Km/h)
+* RPMPA -> Variavel consedida pela analise do treinamento da RN
+* maxA -> Amperagem maxima aplicavel ao motor pelo driver
+*/
+double maxRPM = 5000;
+double rpmT = 281.32; // 26Km/h para roda com R=24.5cm
+double RPMPA = 336; // dados coletados em 16/10/15
+double maxA = 6;
+
+/*
+-- Variaveis de sistema
+*/
+unsigned long sisTime = 0;
+long refreshInterval = 1000;
+double pulsePerMS = 0;
+int pulseCount = 0;
+int pulseState = 0;
+
+
+/*
+-- Variaveis (Calibraveis) --
+-- Velocidade [OBSOLETO!]
+* minI -> Leitura do velocimetro a 0 RPM (da roda)
+* maxI -> Leitura do velocimetro a @maxRPM (da roda)
+-- Amperagem
+* minO -> input do driver para a liberacao de 0 Amp do mesmo
+* maxO -> input do driver para a liberacao de @maxA Amp do mesmo
+*/
+double minI = 0;
+double maxI = 1022;
+double minO = 0;
+double maxO = 6;
+
+/*
+-- Pinagem --
+* velo -> pino do velicimetro (input)
+* drive -> pino do driver (output)
+* buttonPin -> pino do botao de desativacao
+*/
+int velo = A0;
+int drive = A1;
+int buttonPin = 2;
+
+void setup()
+{
+  lcd.begin(20, 4);
+  Serial.begin(9600);
+  pinMode(drive, OUTPUT);
+  pinMode(buttonPin, INPUT);
+}
+
+void loop()
+{
+  // Le RPM da roda
+  double x = rpmIn();
+
+  // Normaliza Leitura
+  // x = normIn(x);
+
+  // Calcula amperagem a ser aplicada
+  x = algor(x);
+
+  // Normaliza saida para o driver
+  x = normOut(x);
+
+  // Checa se fora do loop
+  if (outLoop())
+  {
+    // Envia para o driver
+    driv(x);
+  }
+
+}
+
+/*================= Metodos ==================*/
+
+/*
+  Checa se fora do loop
+ */
+boolean outLoop()
+{
+  int buttonState = digitalRead(buttonPin);
+  if (buttonState == LOW)
+  {
+    Serial.println("ATUACAO CANCELADA!");
+    return true;
+  } else
+  {
+    Serial.println("OK");
+    return false;
+  }
+}
+
+/*
+  Le RPM da roda
+*/
+double rpmIn()
+{
+  unsigned long currentTime = millis();
+  int currentState = 0;
+
+  if (currentTime - sisTime >= refreshInterval) // se percorrido o tempo da medida
+  {
+    sisTime = currentTime;// reseta o tempo
+    pulsePerMS = (pulseCount / refreshInterval); // calcula os pulsos por segundo
+  }
+  else // contabiliza pulsos
+  {
+    currentState = getPulseState();
+    if (currentState < pulseState) // se houve mudanca de estato (pulso foi de alto pra baixo)
+    {
+      pulseCount++;
+    }
+
+  }
+
+  pulseState = currentState;
+  return pulsePerMS * 60000; // transforma em RPM
+
+
+}
+
+int getPulseState()// retorna 1 se medidor em valor alto, -1 se em valor baixo
+{
+  int tresshold = 150;
+  if (analogRead(velo) > 150) {
+    return 1;
+  } else {
+    return -1;
+  }
+}
+
+/*
+  Normaliza Leitura de Entrada
+*/
+double normIn(double in)
+{
+  return (maxRPM * (in - minI)) / (maxI - minI);
+}
+
+/*
+  Calcula amperagem a ser aplicada
+*/
+double algor(double in)
+{
+  double result = 0;
+  // se dentro do dominio valido da funcao
+  if (in < rpmT) {
+    result = (rpmT * log(in)) / (RPMPA * log(rpmT));
+  } else {
+    result = 0;
+  }
+  lcdInfo(in, result);
+  return result;
+}
+
+/*
+  Normaliza saida de para driver
+*/
+double normOut(double in)
+{
+  return ((maxO - minO) * in) / maxA;
+}
+
+/*
+  Envia para driver
+*/
+void driv(double in)
+{
+  analogWrite(drive, in);
+}
+/*
+  LCD Info
+*/
+void lcdInfo(double rpm, double amp)
+{
+  Serial.println("---------------------------");
+  lcd.setCursor(0, 0);
+  lcd.print("RPM da roda:");
+  Serial.print("RPM da roda: ");
+  Serial.print(rpm);
+  Serial.println();
+
+  lcd.setCursor(0, 1);
+  lcd.print(rpm);
+
+  lcd.setCursor(0, 2);
+  lcd.print("Aplicando Amps:");
+  Serial.print("Aplicando Amps: ");
+  Serial.print(amp);
+
+  lcd.setCursor(0, 3);
+  lcd.print(amp);
+  Serial.println();
+}
