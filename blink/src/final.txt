@@ -29,9 +29,6 @@ int d6 = 10; //44
 int d5 = 9; //43
 int d4 = 8; //42
 
-
-
-
 LiquidCrystal lcd(RS, E, d4, d5, d6, d7);
 
 /*
@@ -40,12 +37,10 @@ Termos:
 RPM: Rotacao por minuto DA RODA DO CARRO
 A: Amperagem fornecida para o motor
 -- Constantes
-* maxRPM -> Rotacao maxima da roda (medicao)
 * rpmT -> Rotacao da roda desejada (a 25km/h) (Raio da roda sendo 24.5cm, o valor e obtido com a seguinte formula: 10.82*V sendo V a velocidade em Km/h)
 * RPMPA -> Variavel consedida pela analise do treinamento da RN
 * maxA -> Amperagem maxima aplicavel ao motor pelo driver
 */
-double maxRPM = 5000;
 double rpmT = 281.32; // 26Km/h para roda com R=24.5cm
 double RPMPA = 336; // dados coletados em 16/10/15
 double maxA = 6;
@@ -62,15 +57,10 @@ int pulseState = 0;
 
 /*
 -- Variaveis (Calibraveis) --
--- Velocidade [OBSOLETO!]
-* minI -> Leitura do velocimetro a 0 RPM (da roda)
-* maxI -> Leitura do velocimetro a @maxRPM (da roda)
 -- Amperagem
 * minO -> input do driver para a liberacao de 0 Amp do mesmo
 * maxO -> input do driver para a liberacao de @maxA Amp do mesmo
 */
-double minI = 0;
-double maxI = 1022;
 double minO = 0;
 double maxO = 6;
 
@@ -96,9 +86,6 @@ void loop()
 {
   // Le RPM da roda
   double x = rpmIn();
-
-  // Normaliza Leitura
-  // x = normIn(x);
 
   // Calcula amperagem a ser aplicada
   x = algor(x);
@@ -163,6 +150,9 @@ double rpmIn()
 
 }
 
+/*
+  recupera leitura do contador de giro
+*/
 int getPulseState()// retorna 1 se medidor em valor alto, -1 se em valor baixo
 {
   int tresshold = 150;
@@ -173,13 +163,6 @@ int getPulseState()// retorna 1 se medidor em valor alto, -1 se em valor baixo
   }
 }
 
-/*
-  Normaliza Leitura de Entrada
-*/
-double normIn(double in)
-{
-  return (maxRPM * (in - minI)) / (maxI - minI);
-}
 
 /*
   Calcula amperagem a ser aplicada
