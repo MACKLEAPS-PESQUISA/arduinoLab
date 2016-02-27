@@ -22,12 +22,12 @@ http://www.arduino.cc/en/Tutorial/LiquidCrystal
 */
 #include <LiquidCrystal.h>
 
-int RS = 13; //47
-int E = 12; //46
-int d7 = 11; //45
-int d6 = 10; //44
-int d5 = 9; //43
-int d4 = 8; //42
+int RS = 47; //13; //47
+int E =  46;//12; //46
+int d7 =  45;//11; //45
+int d6 =  44; //10; //44
+int d5 = 43; //9; //43
+int d4 = 42;//8; //42
 
 LiquidCrystal lcd(RS, E, d4, d5, d6, d7);
 
@@ -41,7 +41,7 @@ A: Amperagem fornecida para o motor
 * RPMPA -> Variavel consedida pela analise do treinamento da RN
 * maxA -> Amperagem maxima aplicavel ao motor pelo driver
 */
-double rpmT = 281.32; // 26Km/h para roda com R=24.5cm
+double rpmT = 500; // 26Km/h para roda com R=24.5cm RPM = 281.32
 double RPMPA = 336; // dados coletados em 16/10/15
 double maxA = 6;
 
@@ -50,7 +50,7 @@ double maxA = 6;
 */
 unsigned long sisTime = 0;
 long refreshInterval = 1000;
-double pulsePerMS = 0;
+float pulsePerMS = 0;
 int pulseCount = 0;
 int pulseState = 0;
 
@@ -86,6 +86,7 @@ void loop()
 {
   // Le RPM da roda
   double x = rpmIn();
+  // Serial.println(x);
 
   // Calcula amperagem a ser aplicada
   x = algor(x);
@@ -110,6 +111,7 @@ void loop()
 boolean outLoop()
 {
   int buttonState = digitalRead(buttonPin);
+  Serial.println(buttonState);
   if (buttonState == LOW)
   {
     Serial.println("ATUACAO CANCELADA!");
@@ -132,7 +134,8 @@ double rpmIn()
   if (currentTime - sisTime >= refreshInterval) // se percorrido o tempo da medida
   {
     sisTime = currentTime;// reseta o tempo
-    pulsePerMS = (pulseCount / refreshInterval); // calcula os pulsos por segundo
+    pulsePerMS = ((pulseCount*60000) / refreshInterval); // calcula os pulsos por segundo
+    pulseCount = 0;
   }
   else // contabiliza pulsos
   {
@@ -145,7 +148,7 @@ double rpmIn()
   }
 
   pulseState = currentState;
-  return pulsePerMS * 60000; // transforma em RPM
+  return pulsePerMS; //* 60000; // transforma em RPM
 
 
 }
@@ -155,11 +158,13 @@ double rpmIn()
 */
 int getPulseState()// retorna 1 se medidor em valor alto, -1 se em valor baixo
 {
+  int readd = analogRead(velo);
+  // Serial.println(readd);
   int tresshold = 150;
-  if (analogRead(velo) > 150) {
-    return 1;
-  } else {
+  if (readd > 150) {
     return -1;
+  } else {
+    return 1;
   }
 }
 
