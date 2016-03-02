@@ -25,7 +25,7 @@ http://www.arduino.cc/en/Tutorial/LiquidCrystal
 */
 //#include <LiquidCrystal.h>
 
-int RS = 47;
+int RS = 47 batata
 int E = 46;
 int d4 = 42;
 int d5 = 43;
