@@ -1,41 +1,4 @@
 /*
-====== LCD ======
-Pinagen:
-lcd(47, 46, 42, 43, 44, 45);
-lcd(RS, E, d4, d5, d6, d7);
-
--- Pinos usados
-* LCD RS pin -> (RS)
-* LCD Enable pin -> (E)
-* LCD D4 pin -> (d4)
-* LCD D5 pin -> (d5)
-* LCD D6 pin -> (d6)
-* LCD D7 pin -> (d7)
-
--- Config. Pinos
-* LCD R/W pin -> ground
-* LCD VSS pin -> ground
-* LCD VCC pin -> 5V
--- 10K resistor: (Ver se incluso na placa)
-* ends to +5V and ground
-* wiper to LCD VO pin (pin 3)
-
--- Exemplo:
-http://www.arduino.cc/en/Tutorial/LiquidCrystal
-
-//#include <LiquidCrystal.h>
-
-int RS = 47;
-int E = 46;
-int d4 = 42;
-int d5 = 43;
-int d6 = 44;
-int d7 = 45;
-
-//LiquidCrystal lcd(RS, E, d4, d5, d6, d7);
-*/
-
-/*
  * Dados específicos do carro.
  *
  * Aqui, unidades em rpm referem-se à velocidade angular da RODA DO CARRO.
@@ -114,7 +77,6 @@ double pid(double rpm)
 
 void setup()
 {
-  //lcd.begin(20, 4);
   pinMode(PIN_DRIVER, OUTPUT);
 }
 
@@ -151,22 +113,3 @@ void driv(double in)
 {
 	analogWrite(PIN_DRIVER, in);
 }
-/*
-	LCD Info
-*/
-/*
-void lcdInfo(double rpm, double amp)
-{
-	lcd.setCursor(0, 0);
-	lcd.print("RPM da roda:");
-
-	lcd.setCursor(0, 1);
-	lcd.print(rpm);
-
-	lcd.setCursor(0, 2);
-	lcd.print("Aplicando Amps:");
-
-	lcd.setCursor(0, 3);
-	lcd.print(amp);
-}
-*/
