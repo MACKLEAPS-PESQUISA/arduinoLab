@@ -73,6 +73,45 @@ const double OUTPUT_MAX = 6;
 const int PIN_VELOCIMETRO = 0; // pino do velocímetro (entrada)
 const int PIN_DRIVER = 3;      // pino do driver (saída)
 
+/*
+ * Para que o processador não precise fazer essas sempre...
+ */
+const double PID_CONST = RPM_TARGET / (RPM_PER_AMP * log(RPM_TARGET));
+const double AMP_NORM = (OUTPUT_MAX - OUTPUT_MIN) / AMP_MAX;
+const double RPM_NORM = RPM_MAX / (INPUT_MAX - INPUT_MIN);
+
+/*
+ * Funções de normalização de entrada e saída. Por se tratarem de cálculos
+ * breves retornados diretamente, é melhor deixar claro para o compilador que as
+ * rotinas podem ser substituídas `inline'.
+ */
+static inline double rpm_norm(double rpm)
+{
+	return RPM_NORM * (rpm - INPUT_MIN);
+}
+
+static inline double amp_norm(double amp)
+{
+	return AMP_NORM * amp;
+}
+
+/*
+ * Calcula a amperagem a ser aplicada ao motor baseando-se na atual velocidade
+ * angular da roda, medida externamente. Fundamenta-se em um controlador PID,
+ * aplicando uma corrente em função de um erro.
+ *
+ * A fórmula obtida para esse caso é:
+ *
+ * RPM_ALVO * log(RPM_ATUAL)/(RPM_POR_AMPERE * log(RPM_ALVO))
+ */
+double pid(double rpm)
+{
+	if (rpm < RPM_TARGET)
+		return PID_CONST * log(rpm);
+	else
+		return 0;
+}
+
 void setup()
 {
   //lcd.begin(20, 4);
@@ -85,13 +124,13 @@ void loop()
 	double x = rpmIn();
 
 	// Normaliza Leitura
-	x = normIn(x);
+	x = rpm_norm(x);
 
 	// Calcula amperagem a ser aplicada
-	x = algor(x);
+	x = pid(x);
 
 	// Normaliza saida para o driver
-	x = normOut(x);
+	x = amp_norm(x);
 
 	// Envia para o driver
 	driv(x);
@@ -103,38 +142,6 @@ void loop()
 double rpmIn()
 {
 	return analogRead(PIN_VELOCIMETRO);
-}
-
-/*
-	Normaliza Leitura de Entrada
-*/
-double normIn(double in)
-{
-	return (RPM_MAX*(in-INPUT_MIN))/(INPUT_MAX-INPUT_MIN);
-}
-
-/*
-	Calcula amperagem a ser aplicada
-*/
-double algor(double in)
-{
-  double result = 0;
-  // se dentro do dominio valido da funcao
-  if(in<RPM_TARGET){
-    result = (RPM_TARGET * log(in))/(RPM_PER_AMP * log(RPM_TARGET));
-  } else {
-    result = 0;
-  }
-  //lcdInfo(in,result);
-  return result;
-}
-
-/*
-	Normaliza saida de para driver
-*/
-double normOut(double in)
-{
-	return ((OUTPUT_MAX-OUTPUT_MIN)*in)/AMP_MAX;
 }
 
 /*
