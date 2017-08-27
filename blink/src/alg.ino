@@ -83,34 +83,10 @@ void setup()
 
 void loop()
 {
-	// Le RPM da roda
-	double x = rpmIn();
+	double amp;
 
-	// Normaliza Leitura
-	x = rpm_norm(x);
+	amp = rpm_norm(analogRead(PIN_VELOCIMETRO));
+	amp = amp_norm(pid(amp));
 
-	// Calcula amperagem a ser aplicada
-	x = pid(x);
-
-	// Normaliza saida para o driver
-	x = amp_norm(x);
-
-	// Envia para o driver
-	driv(x);
-}
-
-/*
-	Le RPM da roda
-*/
-double rpmIn()
-{
-	return analogRead(PIN_VELOCIMETRO);
-}
-
-/*
-	Envia para driver
-*/
-void driv(double in)
-{
-	analogWrite(PIN_DRIVER, in);
+	analogWrite(PIN_DRIVER, amp);
 }
