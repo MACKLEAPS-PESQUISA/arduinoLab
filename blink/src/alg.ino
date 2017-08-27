@@ -77,7 +77,8 @@ double pid(double rpm)
 
 void setup()
 {
-  pinMode(PIN_DRIVER, OUTPUT);
+	pinMode(PIN_VELOCIMETRO, INPUT);
+	pinMode(PIN_DRIVER, OUTPUT);
 }
 
 void loop()
